@@ -1,0 +1,38 @@
+// src/components/EmailSender.js
+import React from "react";
+import emailjs from "@emailjs/browser";
+
+const EmailSender = ({ formValues, onSuccess }) => {
+  const handleSendEmail = () => {
+    const templateParams = {
+      project_name: formValues.projectName,
+      project_location: formValues.projectLocation,
+      units: JSON.stringify(formValues.units, null, 2),
+    };
+
+    emailjs
+      .send(
+        process.env.REACT_APP_EMAILJS_SERVICE_ID,
+        process.env.REACT_APP_EMAILJS_TEMPLATE_ID,
+        templateParams,
+        process.env.REACT_APP_EMAILJS_USER_ID
+      )
+      .then(
+        (response) => {
+          console.log("SUCCESS!", response.status, response.text);
+          onSuccess(); // işlem başarılıysa formu sıfırlayabilir vs.
+        },
+        (err) => {
+          console.log("FAILED...", err);
+        }
+      );
+  };
+
+  return (
+    <button type="button" onClick={handleSendEmail}>
+      E-Posta Gönder
+    </button>
+  );
+};
+
+export default EmailSender;
