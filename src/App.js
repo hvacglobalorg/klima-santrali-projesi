@@ -9,16 +9,49 @@ import {
   BrowserRouter as Router,
   Routes,
   Route,
-  Navigate
+  Navigate,
+  useNavigate,
 } from 'react-router-dom';
 
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import HomePage from './pages/HomePage'; // ✅ Artık ayrı dosyadan geliyor
-import { AuthProvider, useAuth } from './context/AuthContext';
+import { AuthProvider } from './context/AuthContext';
 
-function App() {
+function createNewUnit(id) {
+  return {
+    id,
+    type: '',
+    fanFlow: '',
+    fanPressure: '',
+    aspFlow: '',
+    aspPressure: '',
+    heatingNeed: '',
+    heatingType: '',
+    heatingCapacity: '',
+    coolingNeed: '',
+    coolingType: '',
+    coolingCapacity: '',
+    humidNeed: '',
+    humidType: '',
+    humidCapacity: '',
+    advancedEnabled: false,
+    winterTemp: 22,
+    summerTemp: 24,
+    customWidth: '',
+    customLength: '',
+    customHeight: '',
+    isHygienic: false,
+    silencer: 'hayir',
+    silencerFan: false,
+    silencerExhaust: false,
+    recoveryType: '',
+    mixingType: '',
+  };
+}
+
+function DesignPage() {
   const [projectName, setProjectName] = useState('');
   const [location, setLocation] = useState('');
   const [editingClimate, setEditingClimate] = useState(false);
@@ -33,42 +66,12 @@ function App() {
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const pdfRef = useRef();
 
-  function createNewUnit(id) {
-    return {
-      id,
-      type: '',
-      fanFlow: '',
-      fanPressure: '',
-      aspFlow: '',
-      aspPressure: '',
-      heatingNeed: '',
-      heatingType: '',
-      heatingCapacity: '',
-      coolingNeed: '',
-      coolingType: '',
-      coolingCapacity: '',
-      humidNeed: '',
-      humidType: '',
-      humidCapacity: '',
-      advancedEnabled: false,
-      winterTemp: 22,
-      summerTemp: 24,
-      customWidth: '',
-      customLength: '',
-      customHeight: '',
-      isHygienic: false,
-      silencer: 'hayir',
-      silencerFan: false,
-      silencerExhaust: false,
-      recoveryType: '',
-      mixingType: '',
-    };
-  }
-
-  const getUnitName = (id) => `KS-${id.toString().padStart(2, '0')}`;
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const selectedCity = citiesData.find(city => city.name === location.toUpperCase());
+    const selectedCity = citiesData.find(
+      (city) => city.name === location.toUpperCase()
+    );
     if (selectedCity) {
       setClimateData({
         altitude: selectedCity.altitude,
@@ -91,7 +94,7 @@ function App() {
   };
 
   const handleUnitChange = (id, newData) => {
-    setUnits(units.map(unit => unit.id === id ? { ...unit, ...newData } : unit));
+    setUnits(units.map((unit) => (unit.id === id ? { ...unit, ...newData } : unit)));
   };
 
   const handleFileUpload = (e) => {
@@ -122,82 +125,105 @@ function App() {
     });
   };
 
-  // Güncellenmiş handleSaveProject:
- const handleSaveProject = async () => {
-  const projectData = {
-    projectName,
-    location,
-    altitude: Number(climateData.altitude),
-    winterDryTemp: Number(climateData.winterDB),
-    summerDryTemp: Number(climateData.summerDB),
-    summerWetTemp: Number(climateData.summerWB),
-    units,
-    uploadedFiles: Array.from(uploadedFiles).map(f => f.name),
-    createdAt: new Date().toISOString(),
+  const getUnitName = (id) => `KS-${id.toString().padStart(2, '0')}`;
+
+  const handleSaveProject = async () => {
+    const projectData = {
+      projectName,
+      location,
+      altitude: Number(climateData.altitude),
+      winterDryTemp: Number(climateData.winterDB),
+      summerDryTemp: Number(climateData.summerDB),
+      summerWetTemp: Number(climateData.summerWB),
+      units,
+      uploadedFiles: Array.from(uploadedFiles).map((f) => f.name),
+      createdAt: new Date().toISOString(),
+    };
+
+    const token = localStorage.getItem('token');
+
+    try {
+      const response = await fetch('http://localhost:5000/api/projects', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(projectData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Sunucu hatası:', errorData);
+        throw new Error(errorData.message || 'Proje kaydedilemedi.');
+      }
+
+      alert('✅ Proje başarıyla kaydedildi!');
+      // Kaydetme başarılıysa panel sayfasına yönlendir
+      navigate('/panel');
+    } catch (error) {
+      alert('❌ Proje kaydedilirken hata oluştu: ' + error.message);
+      console.error('Kaydetme hatası:', error);
+    }
   };
 
-  const token = localStorage.getItem('token');
-
-  try {
-    const response = await fetch('http://localhost:5000/api/projects', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-      },
-      body: JSON.stringify(projectData),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Sunucu hatası:', errorData);
-      throw new Error(errorData.message || 'Proje kaydedilemedi.');
-    }
-
-    alert('✅ Proje başarıyla kaydedildi!');
-  } catch (error) {
-    alert('❌ Proje kaydedilirken hata oluştu: ' + error.message);
-    console.error('Kaydetme hatası:', error);
-  }
-};
-
-
-
-  const renderDesignPage = () => (
+  return (
     <div style={{ padding: 20, maxWidth: '1400px', margin: 'auto' }}>
       <h1>Klima Santrali Tasarımı</h1>
 
       <div ref={pdfRef} className="pdf-section">
         <div className="form-row">
           <label>Proje İsmi:</label>
-          <input type="text" value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder="Proje ismi giriniz" />
+          <input
+            type="text"
+            value={projectName}
+            onChange={(e) => setProjectName(e.target.value)}
+            placeholder="Proje ismi giriniz"
+          />
         </div>
 
         <div className="form-row align-center">
           <label>Proje Konumu:</label>
-          <select value={location} onChange={(e) => setLocation(e.target.value)} className="location-select">
+          <select
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            className="location-select"
+          >
             <option value="">Seçiniz</option>
             {citiesData.map((city, i) => (
-              <option key={i} value={city.name}>{city.name}</option>
+              <option key={i} value={city.name}>
+                {city.name}
+              </option>
             ))}
           </select>
 
           {!editingClimate ? (
             <>
               <span className="climate-info">
-                Rakım: {climateData.altitude} m | Kış KT: {climateData.winterDB} °C | Yaz KT: {climateData.summerDB} °C | Yaz YT: {climateData.summerWB} °C
+                Rakım: {climateData.altitude} m | Kış KT: {climateData.winterDB} °C | Yaz
+                KT: {climateData.summerDB} °C | Yaz YT: {climateData.summerWB} °C
               </span>
-              <button className="btn-small" onClick={() => setEditingClimate(true)}>Değiştir</button>
+              <button className="btn-small" onClick={() => setEditingClimate(true)}>
+                Değiştir
+              </button>
             </>
           ) : (
             <div className="climate-edit">
               {['altitude', 'winterDB', 'summerDB', 'summerWB'].map((key, i) => (
                 <div key={i}>
                   <label>{key}:</label>
-                  <input type="number" value={climateData[key]} onChange={(e) => setClimateData({ ...climateData, [key]: e.target.value })} />
+                  <input
+                    type="number"
+                    value={climateData[key]}
+                    onChange={(e) =>
+                      setClimateData({ ...climateData, [key]: e.target.value })
+                    }
+                  />
                 </div>
               ))}
-              <button className="btn-small" onClick={() => setEditingClimate(false)}>Kaydet</button>
+              <button className="btn-small" onClick={() => setEditingClimate(false)}>
+                Kaydet
+              </button>
             </div>
           )}
         </div>
@@ -216,36 +242,49 @@ function App() {
         ))}
       </div>
 
-      <button className="btn-add" onClick={handleAddUnit}>➕ Yeni Santral Ekle</button>
+      <button className="btn-add" onClick={handleAddUnit}>
+        ➕ Yeni Santral Ekle
+      </button>
 
       <div className="file-upload-section">
         <h3>📎 İlgili Şartname/Proje Dökümanlarını Yükle</h3>
-        <input type="file" multiple onChange={handleFileUpload} className="file-input" />
+        <input
+          type="file"
+          multiple
+          onChange={handleFileUpload}
+          className="file-input"
+        />
         {uploadedFiles.length > 0 && (
           <ul className="uploaded-file-list">
-            {Array.from(uploadedFiles).map((file, index) => <li key={index}>{file.name}</li>)}
+            {Array.from(uploadedFiles).map((file, index) => (
+              <li key={index}>{file.name}</li>
+            ))}
           </ul>
         )}
       </div>
 
       <div className="btn-group">
-        <button className="btn-save" onClick={handleSaveProject}>💾 Projeyi Kaydet</button>
-        <button className="btn-pdf" onClick={generatePDF}>📄 PDF Oluştur (Ekran Görüntüsü)</button>
+        <button className="btn-save" onClick={handleSaveProject}>
+          💾 Projeyi Kaydet
+        </button>
+        <button className="btn-pdf" onClick={generatePDF}>
+          📄 PDF Oluştur (Ekran Görüntüsü)
+        </button>
       </div>
     </div>
   );
+}
 
+function App() {
   return (
     <AuthProvider>
       <Router>
         <Routes>
           <Route path="/" element={<HomePage />} />
-          <Route path="/tasarim" element={renderDesignPage()} />
+          <Route path="/tasarim" element={<DesignPage />} />
           <Route path="/giris" element={<LoginPage />} />
           <Route path="/kayit" element={<RegisterPage />} />
           <Route path="/panel" element={<DashboardPage />} />
-
-          {/* Bilinmeyen route'lar için ana sayfaya yönlendirme */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>
