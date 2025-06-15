@@ -13,26 +13,20 @@ const DashboardPage = () => {
       return;
     }
 
-    // Projeleri backend'den çek
     const fetchProjects = async () => {
       try {
         const response = await fetch('https://klima-backend-ggo2.onrender.com/api/projects', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
 
         const data = await response.json();
-        console.log('Backendden gelen data:', data);  // Burada gelen veriyi kontrol edeceğiz
 
         if (!response.ok) {
           throw new Error(data.message || 'Projeler alınamadı.');
         }
 
-        // Şimdilik direkt veriyi koyuyoruz, veri yapısına göre gerekirse burayı değiştiririz
         setProjects(data);
       } catch (err) {
-        console.error('Hata:', err.message);
         alert('Projeler yüklenirken hata oluştu: ' + err.message);
       } finally {
         setLoading(false);
@@ -42,8 +36,47 @@ const DashboardPage = () => {
     fetchProjects();
   }, [navigate]);
 
-  const handleNewProject = () => {
-    navigate('/tasarim');
+  const handleNewProject = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('Önce giriş yapmalısınız!');
+      navigate('/giris');
+      return;
+    }
+
+    // Örnek yeni proje verisi. Backend’in istediği formatla uyumlu olmalı.
+    const newProject = {
+      projectName: 'Yeni Proje ' + new Date().toLocaleString(),
+      location: 'Bilinmeyen',
+      // Buraya backend'in beklediği diğer alanlar gelebilir.
+    };
+
+    try {
+      const response = await fetch('https://klima-backend-ggo2.onrender.com/api/projects', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(newProject),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Proje kaydedilemedi.');
+      }
+
+      // Başarılı ise projeyi listeye ekle
+      setProjects(prev => [data, ...prev]);
+      alert('Yeni proje başarıyla eklendi!');
+
+      // İstersen hemen tasarım sayfasına yönlendir
+      // navigate(`/tasarim?edit=${data._id}`);
+
+    } catch (err) {
+      alert('Proje kaydedilirken hata oluştu: ' + err.message);
+    }
   };
 
   const handleEditProject = (projectId) => {
@@ -57,9 +90,7 @@ const DashboardPage = () => {
     try {
       const response = await fetch(`https://klima-backend-ggo2.onrender.com/api/projects/${projectId}`, {
         method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (!response.ok) {
@@ -126,19 +157,24 @@ const DashboardPage = () => {
               role="button"
               tabIndex={0}
               aria-label={`Projeyi düzenle: ${proj.projectName || 'İsimsiz Proje'}`}
-              onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.03)'}
-              onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+              onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.03)')}
+              onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
             >
               <div>
                 <h3 style={{ margin: '0 0 10px 0', color: '#333' }}>{proj.projectName || 'İsimsiz Proje'}</h3>
-                <p style={{ margin: '0 0 5px 0', color: '#555' }}><strong>Konum:</strong> {proj.location}</p>
+                <p style={{ margin: '0 0 5px 0', color: '#555' }}>
+                  <strong>Konum:</strong> {proj.location}
+                </p>
                 <p style={{ margin: 0, fontSize: '0.85rem', color: '#777' }}>
                   Oluşturulma Tarihi: {new Date(proj.createdAt).toLocaleString()}
                 </p>
               </div>
               <div style={{ marginTop: 15, display: 'flex', justifyContent: 'space-between' }}>
                 <button
-                  onClick={(e) => { e.stopPropagation(); handleEditProject(proj._id); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleEditProject(proj._id);
+                  }}
                   style={{
                     backgroundColor: '#4caf50',
                     border: 'none',
@@ -149,15 +185,18 @@ const DashboardPage = () => {
                     fontWeight: 'bold',
                     flex: 1,
                     marginRight: 10,
-                    transition: 'background-color 0.3s'
+                    transition: 'background-color 0.3s',
                   }}
-                  onMouseEnter={e => e.currentTarget.style.backgroundColor = '#45a049'}
-                  onMouseLeave={e => e.currentTarget.style.backgroundColor = '#4caf50'}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#45a049')}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#4caf50')}
                 >
                   Düzenle
                 </button>
                 <button
-                  onClick={(e) => { e.stopPropagation(); handleDeleteProject(proj._id); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteProject(proj._id);
+                  }}
                   style={{
                     backgroundColor: '#f44336',
                     border: 'none',
@@ -167,10 +206,10 @@ const DashboardPage = () => {
                     cursor: 'pointer',
                     fontWeight: 'bold',
                     flex: 1,
-                    transition: 'background-color 0.3s'
+                    transition: 'background-color 0.3s',
                   }}
-                  onMouseEnter={e => e.currentTarget.style.backgroundColor = '#da190b'}
-                  onMouseLeave={e => e.currentTarget.style.backgroundColor = '#f44336'}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#da190b')}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#f44336')}
                 >
                   Sil
                 </button>
@@ -194,8 +233,8 @@ const DashboardPage = () => {
             boxShadow: '0 3px 6px rgba(0,0,0,0.2)',
             transition: 'background-color 0.3s',
           }}
-          onMouseEnter={e => e.currentTarget.style.backgroundColor = '#1565c0'}
-          onMouseLeave={e => e.currentTarget.style.backgroundColor = '#1976d2'}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#1565c0')}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#1976d2')}
         >
           ➕ Yeni Proje Ekle
         </button>
