@@ -16,7 +16,7 @@ import {
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
-import HomePage from './pages/HomePage'; // ✅ Artık ayrı dosyadan geliyor
+import HomePage from './pages/HomePage';
 import { AuthProvider } from './context/AuthContext';
 
 function createNewUnit(id) {
@@ -51,6 +51,7 @@ function createNewUnit(id) {
   };
 }
 
+// DesignPage bileşeni - burada useNavigate kullanılmalı
 function DesignPage() {
   const [projectName, setProjectName] = useState('');
   const [location, setLocation] = useState('');
@@ -66,7 +67,7 @@ function DesignPage() {
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const pdfRef = useRef();
 
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // burada useNavigate
 
   useEffect(() => {
     const selectedCity = citiesData.find(
@@ -159,8 +160,7 @@ function DesignPage() {
       }
 
       alert('✅ Proje başarıyla kaydedildi!');
-      // Kaydetme başarılıysa panel sayfasına yönlendir
-      navigate('/panel');
+      navigate('/panel'); // yönlendirme burada
     } catch (error) {
       alert('❌ Proje kaydedilirken hata oluştu: ' + error.message);
       console.error('Kaydetme hatası:', error);
