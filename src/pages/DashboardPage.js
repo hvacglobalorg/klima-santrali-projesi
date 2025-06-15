@@ -16,11 +16,11 @@ const DashboardPage = () => {
     // Projeleri backend'den çek
     const fetchProjects = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/projects', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await fetch('https://klima-backend-ggo2.onrender.com/api/projects', {
+  headers: {
+    Authorization: `Bearer ${token}`,
+  },
+});
 
         const data = await response.json();
         if (!response.ok) {
@@ -52,12 +52,12 @@ const DashboardPage = () => {
 
     const token = localStorage.getItem('token');
     try {
-      const response = await fetch(`http://localhost:5000/api/projects/${projectId}`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(`https://klima-backend-ggo2.onrender.com/api/projects/${projectId}`, {
+  method: 'DELETE',
+  headers: {
+    Authorization: `Bearer ${token}`,
+  },
+});
 
       if (!response.ok) {
         const data = await response.json();
