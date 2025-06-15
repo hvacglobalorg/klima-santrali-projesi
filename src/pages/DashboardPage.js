@@ -17,16 +17,19 @@ const DashboardPage = () => {
     const fetchProjects = async () => {
       try {
         const response = await fetch('https://klima-backend-ggo2.onrender.com/api/projects', {
-  headers: {
-    Authorization: `Bearer ${token}`,
-  },
-});
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
         const data = await response.json();
+        console.log('Backendden gelen data:', data);  // Burada gelen veriyi kontrol edeceğiz
+
         if (!response.ok) {
           throw new Error(data.message || 'Projeler alınamadı.');
         }
 
+        // Şimdilik direkt veriyi koyuyoruz, veri yapısına göre gerekirse burayı değiştiririz
         setProjects(data);
       } catch (err) {
         console.error('Hata:', err.message);
@@ -53,11 +56,11 @@ const DashboardPage = () => {
     const token = localStorage.getItem('token');
     try {
       const response = await fetch(`https://klima-backend-ggo2.onrender.com/api/projects/${projectId}`, {
-  method: 'DELETE',
-  headers: {
-    Authorization: `Bearer ${token}`,
-  },
-});
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       if (!response.ok) {
         const data = await response.json();
@@ -101,7 +104,7 @@ const DashboardPage = () => {
         <p style={{ textAlign: 'center' }}>Henüz kayıtlı proje yok.</p>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(280px,1fr))', gap: 20 }}>
-          {projects.map((proj, index) => (
+          {projects.map((proj) => (
             <div
               key={proj._id}
               style={{
@@ -117,7 +120,9 @@ const DashboardPage = () => {
                 cursor: 'pointer',
               }}
               onClick={() => handleEditProject(proj._id)}
-              onKeyDown={(e) => { if (e.key === 'Enter') handleEditProject(proj._id); }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleEditProject(proj._id);
+              }}
               role="button"
               tabIndex={0}
               aria-label={`Projeyi düzenle: ${proj.projectName || 'İsimsiz Proje'}`}
