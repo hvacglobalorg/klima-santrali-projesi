@@ -31,9 +31,18 @@ router.post('/', verifyToken, async (req, res) => {
     } = req.body;
 
     // Basit zorunlu alan kontrolü
-    if (!projectName || !location || altitude === undefined || winterDryTemp === undefined || summerDryTemp === undefined || summerWetTemp === undefined || !Array.isArray(units)) {
-      return res.status(400).json({ message: 'Eksik veya hatalı veri gönderildi' });
-    }
+    if (
+  !projectName || typeof projectName !== 'string' ||
+  !location || typeof location !== 'string' ||
+  altitude === undefined || altitude === null || isNaN(Number(altitude)) ||
+  winterDryTemp === undefined || winterDryTemp === null || isNaN(Number(winterDryTemp)) ||
+  summerDryTemp === undefined || summerDryTemp === null || isNaN(Number(summerDryTemp)) ||
+  summerWetTemp === undefined || summerWetTemp === null || isNaN(Number(summerWetTemp)) ||
+  !Array.isArray(units)
+) {
+  return res.status(400).json({ message: 'Eksik veya hatalı veri gönderildi' });
+}
+
 
     const newProject = new Project({
       userId: req.user.id,
