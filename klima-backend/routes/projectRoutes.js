@@ -23,19 +23,21 @@ router.post('/', verifyToken, async (req, res) => {
     const {
       projectName,
       location,
-      climateData,
+      altitude,
+      winterDryTemp,
+      summerDryTemp,
+      summerWetTemp,
       units,
     } = req.body;
 
-    // Validasyon kontrolleri
+    // Basit zorunlu alan kontrolü
     if (
       !projectName || typeof projectName !== 'string' ||
       !location || typeof location !== 'string' ||
-      !climateData || typeof climateData !== 'object' ||
-      climateData.altitude === undefined || climateData.altitude === null || isNaN(Number(climateData.altitude)) ||
-      climateData.winterDB === undefined || climateData.winterDB === null || isNaN(Number(climateData.winterDB)) ||
-      climateData.summerDB === undefined || climateData.summerDB === null || isNaN(Number(climateData.summerDB)) ||
-      climateData.summerWB === undefined || climateData.summerWB === null || isNaN(Number(climateData.summerWB)) ||
+      altitude === undefined || altitude === null || isNaN(Number(altitude)) ||
+      winterDryTemp === undefined || winterDryTemp === null || isNaN(Number(winterDryTemp)) ||
+      summerDryTemp === undefined || summerDryTemp === null || isNaN(Number(summerDryTemp)) ||
+      summerWetTemp === undefined || summerWetTemp === null || isNaN(Number(summerWetTemp)) ||
       !Array.isArray(units)
     ) {
       return res.status(400).json({ message: 'Eksik veya hatalı veri gönderildi' });
@@ -45,10 +47,10 @@ router.post('/', verifyToken, async (req, res) => {
       userId: req.user.id,
       projectName,
       location,
-      altitude: Number(climateData.altitude),
-      winterDryTemp: Number(climateData.winterDB),
-      summerDryTemp: Number(climateData.summerDB),
-      summerWetTemp: Number(climateData.summerWB),
+      altitude: Number(altitude),
+      winterDryTemp: Number(winterDryTemp),
+      summerDryTemp: Number(summerDryTemp),
+      summerWetTemp: Number(summerWetTemp),
       units,
     });
 
