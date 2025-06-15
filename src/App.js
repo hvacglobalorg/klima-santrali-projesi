@@ -123,14 +123,14 @@ function App() {
   };
 
   // Güncellenmiş handleSaveProject:
-  const handleSaveProject = async () => {
+ const handleSaveProject = async () => {
   const projectData = {
     projectName,
     location,
-    altitude: climateData.altitude,
-    winterDryTemp: climateData.winterDB,
-    summerDryTemp: climateData.summerDB,
-    summerWetTemp: climateData.summerWB,
+    altitude: Number(climateData.altitude),
+    winterDryTemp: Number(climateData.winterDB),
+    summerDryTemp: Number(climateData.summerDB),
+    summerWetTemp: Number(climateData.summerWB),
     units,
     uploadedFiles: Array.from(uploadedFiles).map(f => f.name),
     createdAt: new Date().toISOString(),
@@ -150,14 +150,17 @@ function App() {
 
     if (!response.ok) {
       const errorData = await response.json();
+      console.error('Sunucu hatası:', errorData);
       throw new Error(errorData.message || 'Proje kaydedilemedi.');
     }
 
-    alert('Proje başarıyla kaydedildi!');
+    alert('✅ Proje başarıyla kaydedildi!');
   } catch (error) {
-    alert('Proje kaydedilirken hata oluştu: ' + error.message);
+    alert('❌ Proje kaydedilirken hata oluştu: ' + error.message);
+    console.error('Kaydetme hatası:', error);
   }
 };
+
 
 
   const renderDesignPage = () => (
