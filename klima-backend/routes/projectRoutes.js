@@ -6,6 +6,9 @@ const verifyToken = require('../middleware/verifyToken');
 // ✅ Tüm projeleri getir (sadece giriş yapan kullanıcıya ait)
 router.get('/', verifyToken, async (req, res) => {
   try {
+    console.log('GET /api/projects çağrıldı');
+    console.log('Kullanıcı ID:', req.user?.id); // Debug amaçlı
+
     const projects = await Project.find({ userId: req.user.id }).sort({ createdAt: -1 });
     res.json(projects);
   } catch (err) {
@@ -18,7 +21,12 @@ router.get('/', verifyToken, async (req, res) => {
 router.post('/', verifyToken, async (req, res) => {
   try {
     console.log('POST /api/projects çağrıldı');
+    console.log('JWT kullanıcı bilgisi:', req.user); // Debug
     console.log('Gönderilen body:', req.body);
+
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ message: 'Kullanıcı kimliği doğrulanamadı.' });
+    }
 
     const {
       projectName,
@@ -55,11 +63,11 @@ router.post('/', verifyToken, async (req, res) => {
     });
 
     await newProject.save();
-    console.log('Yeni proje başarıyla kaydedildi:', newProject._id);
+    console.log('✅ Yeni proje kaydedildi:', newProject._id);
 
     res.status(201).json({ message: 'Proje başarıyla kaydedildi', project: newProject });
   } catch (err) {
-    console.error('Proje kaydedilirken hata oluştu:', err);
+    console.error('❌ Proje kaydedilirken hata oluştu:', err);
     res.status(500).json({ message: 'Proje kaydedilemedi', error: err.message });
   }
 });
@@ -79,7 +87,7 @@ router.delete('/:id', verifyToken, async (req, res) => {
     await project.deleteOne();
     res.json({ message: 'Proje silindi' });
   } catch (err) {
-    console.error('Proje silinirken hata oluştu:', err);
+    console.error('❌ Proje silinirken hata oluştu:', err);
     res.status(500).json({ message: 'Proje silinemedi', error: err.message });
   }
 });
