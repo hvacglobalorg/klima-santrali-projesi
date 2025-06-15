@@ -9,6 +9,7 @@ router.get('/', verifyToken, async (req, res) => {
     const projects = await Project.find({ userId: req.user.id }).sort({ createdAt: -1 });
     res.json(projects);
   } catch (err) {
+    console.error('Projeler alınamadı:', err);
     res.status(500).json({ message: 'Projeler alınamadı', error: err.message });
   }
 });
@@ -16,6 +17,9 @@ router.get('/', verifyToken, async (req, res) => {
 // ✅ Yeni proje oluştur
 router.post('/', verifyToken, async (req, res) => {
   try {
+    console.log('POST /api/projects çağrıldı');
+    console.log('Gönderilen body:', req.body);
+
     const {
       projectName,
       location,
@@ -25,6 +29,11 @@ router.post('/', verifyToken, async (req, res) => {
       summerWetTemp,
       units,
     } = req.body;
+
+    // Basit zorunlu alan kontrolü
+    if (!projectName || !location || altitude === undefined || winterDryTemp === undefined || summerDryTemp === undefined || summerWetTemp === undefined || !Array.isArray(units)) {
+      return res.status(400).json({ message: 'Eksik veya hatalı veri gönderildi' });
+    }
 
     const newProject = new Project({
       userId: req.user.id,
@@ -38,8 +47,11 @@ router.post('/', verifyToken, async (req, res) => {
     });
 
     await newProject.save();
+    console.log('Yeni proje başarıyla kaydedildi:', newProject._id);
+
     res.status(201).json({ message: 'Proje başarıyla kaydedildi', project: newProject });
   } catch (err) {
+    console.error('Proje kaydedilirken hata oluştu:', err);
     res.status(500).json({ message: 'Proje kaydedilemedi', error: err.message });
   }
 });
@@ -47,7 +59,10 @@ router.post('/', verifyToken, async (req, res) => {
 // ✅ Projeyi sil
 router.delete('/:id', verifyToken, async (req, res) => {
   try {
-    const project = await Project.findOne({ _id: req.params.id, userId: req.user.id });
+    const project = await Project.findOne({
+      _id: req.params.id,
+      userId: req.user.id,
+    });
 
     if (!project) {
       return res.status(404).json({ message: 'Proje bulunamadı veya yetkisiz erişim' });
@@ -56,6 +71,7 @@ router.delete('/:id', verifyToken, async (req, res) => {
     await project.deleteOne();
     res.json({ message: 'Proje silindi' });
   } catch (err) {
+    console.error('Proje silinirken hata oluştu:', err);
     res.status(500).json({ message: 'Proje silinemedi', error: err.message });
   }
 });

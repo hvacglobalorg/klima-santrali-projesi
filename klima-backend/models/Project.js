@@ -1,5 +1,16 @@
 const mongoose = require('mongoose');
 
+const unitSchema = new mongoose.Schema({
+  type: String,
+  fanFlow: String,
+  fanPressure: String,
+  aspFlow: String,
+  aspPressure: String,
+  heatingNeed: String,
+  coolingNeed: String,
+  reheaterNeed: String,
+});
+
 const projectSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -15,17 +26,7 @@ const projectSchema = new mongoose.Schema({
   winterDryTemp: Number,
   summerDryTemp: Number,
   summerWetTemp: Number,
-  units: [
-    {
-      type: String,
-      fanFlow: String,
-      fanPressure: String,
-      aspFlow: String,
-      aspPressure: String,
-      heatingNeed: String,
-      coolingNeed: String,
-    },
-  ],
+  units: [unitSchema],
   createdAt: {
     type: Date,
     default: Date.now,

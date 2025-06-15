@@ -124,38 +124,41 @@ function App() {
 
   // Güncellenmiş handleSaveProject:
   const handleSaveProject = async () => {
-    const projectData = {
-      projectName,
-      location,
-      climateData,
-      units,
-      uploadedFiles: Array.from(uploadedFiles).map(f => f.name),
-      createdAt: new Date().toISOString(),
-    };
-
-    // localStorage’dan token alıyoruz
-    const token = localStorage.getItem('token');
-
-    try {
-      const response = await fetch('http://localhost:5000/api/projects', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify(projectData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Proje kaydedilemedi.');
-      }
-
-      alert('Proje başarıyla kaydedildi!');
-    } catch (error) {
-      alert('Proje kaydedilirken hata oluştu: ' + error.message);
-    }
+  const projectData = {
+    projectName,
+    location,
+    altitude: climateData.altitude,
+    winterDryTemp: climateData.winterDB,
+    summerDryTemp: climateData.summerDB,
+    summerWetTemp: climateData.summerWB,
+    units,
+    uploadedFiles: Array.from(uploadedFiles).map(f => f.name),
+    createdAt: new Date().toISOString(),
   };
+
+  const token = localStorage.getItem('token');
+
+  try {
+    const response = await fetch('http://localhost:5000/api/projects', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify(projectData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Proje kaydedilemedi.');
+    }
+
+    alert('Proje başarıyla kaydedildi!');
+  } catch (error) {
+    alert('Proje kaydedilirken hata oluştu: ' + error.message);
+  }
+};
+
 
   const renderDesignPage = () => (
     <div style={{ padding: 20, maxWidth: '1400px', margin: 'auto' }}>
