@@ -18,10 +18,11 @@ const projectSchema = new mongoose.Schema({
     ref: 'User',
   },
   projectName: {
-    type: String,
-    required: true,
-    default: 'Yeni Proje',  // Boş gelirse otomatik atanacak
-  },
+  type: String,
+  required: true,
+  default: 'Yeni Proje',
+},
+
   location: {
     type: String,
     default: 'Belirtilmedi',
