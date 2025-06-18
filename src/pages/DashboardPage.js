@@ -22,6 +22,13 @@ const DashboardPage = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
 
+        if (response.status === 401) {
+          alert('Oturumunuz sona erdi. Lütfen tekrar giriş yapınız.');
+          localStorage.removeItem('token');
+          navigate('/giris');
+          return;
+        }
+
         const data = await response.json();
 
         if (!response.ok) {
@@ -52,11 +59,9 @@ const DashboardPage = () => {
       return;
     }
 
-    // Sadece zorunlu alanlar backend'e gönderiliyor
     const newProject = {
       projectName: newProjectName.trim(),
-      location: 'Belirtilmedi', // opsiyonel, backend default atar
-      // diğer alanlar backend tarafından otomatik atanacak, frontend boş göndermiyor
+      location: 'Belirtilmedi',
     };
 
     try {
@@ -68,6 +73,13 @@ const DashboardPage = () => {
         },
         body: JSON.stringify(newProject),
       });
+
+      if (response.status === 401) {
+        alert('Oturumunuz sona erdi. Lütfen tekrar giriş yapınız.');
+        localStorage.removeItem('token');
+        navigate('/giris');
+        return;
+      }
 
       const data = await response.json();
 
@@ -101,6 +113,13 @@ const DashboardPage = () => {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });
+
+      if (response.status === 401) {
+        alert('Oturumunuz sona erdi. Lütfen tekrar giriş yapınız.');
+        localStorage.removeItem('token');
+        navigate('/giris');
+        return;
+      }
 
       if (!response.ok) {
         const data = await response.json();
