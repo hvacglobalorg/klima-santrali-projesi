@@ -73,13 +73,14 @@ const DashboardPage = () => {
         throw new Error(data.message || 'Proje oluşturulamadı.');
       }
 
-      setProjects(prev => [data, ...prev]);
+      // Burada data.project ile ekle
+      setProjects(prev => [data.project, ...prev]);
       setShowModal(false);
       setNewProjectName('');
-      localStorage.setItem('activeProjectId', data._id);
+      localStorage.setItem('activeProjectId', data.project._id);
 
       if (redirectToDesign) {
-        navigate(`/tasarim?edit=${data._id}`);
+        navigate(`/tasarim?edit=${data.project._id}`);
       }
     } catch (err) {
       alert('Proje oluşturulurken hata oluştu: ' + err.message);
