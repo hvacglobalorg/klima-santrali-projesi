@@ -38,6 +38,7 @@ router.post('/', verifyToken, async (req, res) => {
       units,
     } = req.body;
 
+    // Zorunlu alanlar ve varsayılan değer ataması
     const newProject = new Project({
       userId: req.user.id,
       projectName: typeof projectName === 'string' && projectName.trim() !== '' ? projectName.trim() : 'Yeni Proje',
@@ -50,12 +51,13 @@ router.post('/', verifyToken, async (req, res) => {
     });
 
     await newProject.save();
+
     console.log('✅ Yeni proje kaydedildi:', newProject._id);
 
-    res.status(201).json({ message: 'Proje başarıyla kaydedildi', project: newProject });
+    return res.status(201).json({ message: 'Proje başarıyla kaydedildi', project: newProject });
   } catch (err) {
     console.error('❌ Proje kaydedilirken hata oluştu:', err);
-    res.status(500).json({ message: 'Proje kaydedilemedi', error: err.message });
+    return res.status(500).json({ message: 'Proje kaydedilemedi', error: err.message });
   }
 });
 
@@ -72,10 +74,10 @@ router.delete('/:id', verifyToken, async (req, res) => {
     }
 
     await project.deleteOne();
-    res.json({ message: 'Proje silindi' });
+    return res.json({ message: 'Proje silindi' });
   } catch (err) {
     console.error('❌ Proje silinirken hata oluştu:', err);
-    res.status(500).json({ message: 'Proje silinemedi', error: err.message });
+    return res.status(500).json({ message: 'Proje silinemedi', error: err.message });
   }
 });
 
