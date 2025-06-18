@@ -38,9 +38,6 @@ router.post('/', verifyToken, async (req, res) => {
       units,
     } = req.body;
 
-    // Zorunlu alan kontrolü kaldırıldı,
-    // eksik ya da hatalı alanlarda default değer atanıyor:
-
     const newProject = new Project({
       userId: req.user.id,
       projectName: typeof projectName === 'string' && projectName.trim() !== '' ? projectName.trim() : 'Yeni Proje',
