@@ -52,10 +52,11 @@ const DashboardPage = () => {
       return;
     }
 
-    // Sadece zorunlu alanlar backend’e gönderiliyor
+    // Sadece zorunlu alanlar backend'e gönderiliyor
     const newProject = {
       projectName: newProjectName.trim(),
-      location: 'Belirtilmedi', // Opsiyonel, istersen backend bunu atar
+      location: 'Belirtilmedi', // opsiyonel, backend default atar
+      // diğer alanlar backend tarafından otomatik atanacak, frontend boş göndermiyor
     };
 
     try {
