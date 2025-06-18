@@ -52,9 +52,10 @@ const DashboardPage = () => {
       return;
     }
 
+    // Sadece zorunlu alanlar backend’e gönderiliyor
     const newProject = {
-      projectName: newProjectName,
-      location: 'Henüz belirlenmedi',
+      projectName: newProjectName.trim(),
+      location: 'Belirtilmedi', // Opsiyonel, istersen backend bunu atar
     };
 
     try {
@@ -73,7 +74,6 @@ const DashboardPage = () => {
         throw new Error(data.message || 'Proje oluşturulamadı.');
       }
 
-      // Burada data.project ile ekle
       setProjects(prev => [data.project, ...prev]);
       setShowModal(false);
       setNewProjectName('');

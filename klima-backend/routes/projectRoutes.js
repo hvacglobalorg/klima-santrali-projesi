@@ -7,7 +7,7 @@ const verifyToken = require('../middleware/verifyToken');
 router.get('/', verifyToken, async (req, res) => {
   try {
     console.log('GET /api/projects çağrıldı');
-    console.log('Kullanıcı ID:', req.user?.id); // Debug amaçlı
+    console.log('Kullanıcı ID:', req.user?.id);
 
     const projects = await Project.find({ userId: req.user.id }).sort({ createdAt: -1 });
     res.json(projects);
@@ -21,7 +21,7 @@ router.get('/', verifyToken, async (req, res) => {
 router.post('/', verifyToken, async (req, res) => {
   try {
     console.log('POST /api/projects çağrıldı');
-    console.log('JWT kullanıcı bilgisi:', req.user); // Debug
+    console.log('JWT kullanıcı bilgisi:', req.user);
     console.log('Gönderilen body:', req.body);
 
     if (!req.user || !req.user.id) {
@@ -38,28 +38,18 @@ router.post('/', verifyToken, async (req, res) => {
       units,
     } = req.body;
 
-    // Basit zorunlu alan kontrolü
-    if (
-      !projectName || typeof projectName !== 'string' ||
-      !location || typeof location !== 'string' ||
-      altitude === undefined || altitude === null || isNaN(Number(altitude)) ||
-      winterDryTemp === undefined || winterDryTemp === null || isNaN(Number(winterDryTemp)) ||
-      summerDryTemp === undefined || summerDryTemp === null || isNaN(Number(summerDryTemp)) ||
-      summerWetTemp === undefined || summerWetTemp === null || isNaN(Number(summerWetTemp)) ||
-      !Array.isArray(units)
-    ) {
-      return res.status(400).json({ message: 'Eksik veya hatalı veri gönderildi' });
-    }
+    // Zorunlu alan kontrolü kaldırıldı,
+    // eksik ya da hatalı alanlarda default değer atanıyor:
 
     const newProject = new Project({
       userId: req.user.id,
-      projectName,
-      location,
-      altitude: Number(altitude),
-      winterDryTemp: Number(winterDryTemp),
-      summerDryTemp: Number(summerDryTemp),
-      summerWetTemp: Number(summerWetTemp),
-      units,
+      projectName: typeof projectName === 'string' && projectName.trim() !== '' ? projectName.trim() : 'Yeni Proje',
+      location: typeof location === 'string' && location.trim() !== '' ? location.trim() : 'Belirtilmedi',
+      altitude: altitude !== undefined && altitude !== null && !isNaN(Number(altitude)) ? Number(altitude) : null,
+      winterDryTemp: winterDryTemp !== undefined && winterDryTemp !== null && !isNaN(Number(winterDryTemp)) ? Number(winterDryTemp) : null,
+      summerDryTemp: summerDryTemp !== undefined && summerDryTemp !== null && !isNaN(Number(summerDryTemp)) ? Number(summerDryTemp) : null,
+      summerWetTemp: summerWetTemp !== undefined && summerWetTemp !== null && !isNaN(Number(summerWetTemp)) ? Number(summerWetTemp) : null,
+      units: Array.isArray(units) ? units : [],
     });
 
     await newProject.save();
