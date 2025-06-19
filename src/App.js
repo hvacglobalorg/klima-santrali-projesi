@@ -20,7 +20,7 @@ import DashboardPage from './pages/DashboardPage';
 import HomePage from './pages/HomePage';
 import { AuthProvider } from './context/AuthContext';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+const API_BASE_URL = 'https://klima-backend-ggo2.onrender.com';
 
 function createNewUnit(id) {
   return {
