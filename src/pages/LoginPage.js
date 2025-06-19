@@ -1,5 +1,7 @@
   import React, { useState } from 'react';
   import { useNavigate } from 'react-router-dom';
+  import { jwtDecode } from 'jwt-decode';
+
 
   const LoginPage = () => {
     const navigate = useNavigate();
@@ -52,6 +54,7 @@
 
         // Başarılı giriş: token'ı localStorage'a kaydet
         console.log('Gelen token:', data.token);
+console.log('Çözülmüş token:', jwtDecode(data.token));
         localStorage.setItem('token', data.token);
         setErrors({});
         navigate('/panel'); // Giriş sonrası panel sayfasına yönlendir
