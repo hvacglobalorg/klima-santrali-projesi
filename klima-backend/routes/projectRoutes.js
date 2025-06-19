@@ -17,6 +17,26 @@ router.get('/', verifyToken, async (req, res) => {
   }
 });
 
+// ✅ Belirli bir projeyi ID ile getir (edit mode için)
+router.get('/:id', verifyToken, async (req, res) => {
+  try {
+    console.log('📥 [GET] /api/projects/:id çağrıldı:', req.params.id);
+    const project = await Project.findOne({
+      _id: req.params.id,
+      userId: req.user.id,
+    });
+
+    if (!project) {
+      return res.status(404).json({ message: 'Proje bulunamadı veya erişim reddedildi' });
+    }
+
+    return res.json(project);
+  } catch (err) {
+    console.error('❌ Proje alınamadı:', err);
+    return res.status(500).json({ message: 'Proje alınamadı', error: err.message });
+  }
+});
+
 // ✅ Yeni proje oluştur
 router.post('/', verifyToken, async (req, res) => {
   try {
