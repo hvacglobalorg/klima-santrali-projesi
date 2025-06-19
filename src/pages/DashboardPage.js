@@ -1,16 +1,28 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode';
 
 const DashboardPage = () => {
   const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
-
   const [showModal, setShowModal] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
 
+  const [username, setUsername] = useState('');
+
   useEffect(() => {
+    // Token'dan kullanıcı adını çek
     const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        setUsername(decoded.username || '');
+      } catch (error) {
+        console.error('Token decode edilirken hata:', error);
+      }
+    }
+
     if (!token) {
       navigate('/giris');
       return;
@@ -48,7 +60,7 @@ const DashboardPage = () => {
 
   const handleCreateProject = async (redirectToDesign = false) => {
     const token = localStorage.getItem('token');
-console.log('Dashboard - token:', token);
+    console.log('Dashboard - token:', token);
     if (!token) {
       alert('Giriş yapmanız gerekiyor.');
       navigate('/giris');
@@ -139,7 +151,23 @@ console.log('Dashboard - token:', token);
   };
 
   return (
-    <div style={{ padding: 20, maxWidth: 900, margin: '0 auto' }}>
+    <div style={{ padding: 20, maxWidth: 900, margin: '0 auto', position: 'relative' }}>
+      {/* Kullanıcı adı sağ üstte */}
+      <div style={{
+        position: 'absolute',
+        top: 20,
+        right: 20,
+        fontWeight: 'bold',
+        fontSize: '1rem',
+        backgroundColor: '#e0e0e0',
+        padding: '6px 12px',
+        borderRadius: 20,
+        userSelect: 'none',
+        color: '#333',
+      }}>
+        Hoşgeldin, {username || 'Ziyaretçi'}
+      </div>
+
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
         <h2>📁 Kayıtlı Projeler</h2>
         <button
