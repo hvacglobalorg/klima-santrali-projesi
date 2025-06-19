@@ -19,6 +19,8 @@ import DashboardPage from './pages/DashboardPage';
 import HomePage from './pages/HomePage';
 import { AuthProvider } from './context/AuthContext';
 
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
 function createNewUnit(id) {
   return {
     id,
@@ -144,7 +146,7 @@ function DesignPage() {
     const token = localStorage.getItem('token');
 
     try {
-      const response = await fetch('http://localhost:5000/api/projects', {
+      const response = await fetch(`${API_BASE_URL}/api/projects`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

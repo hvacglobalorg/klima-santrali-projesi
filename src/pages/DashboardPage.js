@@ -168,8 +168,8 @@ const DashboardPage = () => {
     whiteSpace: 'nowrap',
   }}
 >
--   Hoşgeldin, {username || 'Ziyaretçi'}
-+   {username ? `Hoşgeldin, ${username}` : 'Giriş yapılmadı'}
+Hoşgeldin, {username || 'Ziyaretçi'}
+
 </span>
 
           <button
