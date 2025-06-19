@@ -11,6 +11,7 @@ import {
   Route,
   Navigate,
   useNavigate,
+  useLocation, // 🔧 eklendi
 } from 'react-router-dom';
 
 import LoginPage from './pages/LoginPage';
@@ -53,7 +54,6 @@ function createNewUnit(id) {
   };
 }
 
-// DesignPage bileşeni - burada useNavigate kullanılmalı
 function DesignPage() {
   const [projectName, setProjectName] = useState('');
   const [location, setLocation] = useState('');
@@ -69,7 +69,39 @@ function DesignPage() {
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const pdfRef = useRef();
 
-  const navigate = useNavigate(); // burada useNavigate
+  const navigate = useNavigate();
+  const locationState = useLocation(); // 🔧 eklendi
+  const queryParams = new URLSearchParams(locationState.search); // 🔧 eklendi
+  const editProjectId = queryParams.get('edit'); // 🔧 eklendi
+
+  // 🔧 Eğer edit modundaysa proje verisini çek
+  useEffect(() => {
+    if (editProjectId) {
+      const token = localStorage.getItem('token');
+      fetch(`${API_BASE_URL}/api/projects/${editProjectId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          setProjectName(data.projectName || '');
+          setLocation(data.location || '');
+          setClimateData({
+            altitude: data.altitude || '',
+            winterDB: data.winterDryTemp || '',
+            summerDB: data.summerDryTemp || '',
+            summerWB: data.summerWetTemp || '',
+          });
+          setUnits(data.units || [createNewUnit(1)]);
+          setUploadedFiles(data.uploadedFiles || []);
+        })
+        .catch((err) => {
+          console.error('Proje verisi alınamadı:', err);
+          alert('Proje verisi alınamadı.');
+        });
+    }
+  }, [editProjectId]);
 
   useEffect(() => {
     const selectedCity = citiesData.find(
@@ -130,6 +162,7 @@ function DesignPage() {
 
   const getUnitName = (id) => `KS-${id.toString().padStart(2, '0')}`;
 
+  // 🔧 Projeyi kaydederken PUT mu POST mu karar ver
   const handleSaveProject = async () => {
     const projectData = {
       projectName,
@@ -140,17 +173,21 @@ function DesignPage() {
       summerWetTemp: Number(climateData.summerWB),
       units,
       uploadedFiles: Array.from(uploadedFiles).map((f) => f.name),
-      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
 
     const token = localStorage.getItem('token');
+    const method = editProjectId ? 'PUT' : 'POST';
+    const endpoint = editProjectId
+      ? `${API_BASE_URL}/api/projects/${editProjectId}`
+      : `${API_BASE_URL}/api/projects`;
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/projects`, {
-        method: 'POST',
+      const response = await fetch(endpoint, {
+        method,
         headers: {
           'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(projectData),
       });
@@ -162,7 +199,7 @@ function DesignPage() {
       }
 
       alert('✅ Proje başarıyla kaydedildi!');
-      navigate('/panel'); // yönlendirme burada
+      navigate('/panel');
     } catch (error) {
       alert('❌ Proje kaydedilirken hata oluştu: ' + error.message);
       console.error('Kaydetme hatası:', error);
