@@ -192,11 +192,12 @@ function DesignPage() {
         body: JSON.stringify(projectData),
       });
 
-      if (!response.ok) {
-  const text = await response.text(); // önce text olarak al
-  console.error('Yanıt JSON değil:', text); // logla
+     if (!response.ok) {
+  const text = await response.text(); // JSON değilse bile göster
+  console.error('🛑 Sunucu yanıtı:', text);
   throw new Error('Proje kaydedilemedi.');
 }
+
 
       alert('✅ Proje başarıyla kaydedildi!');
       navigate('/panel');
