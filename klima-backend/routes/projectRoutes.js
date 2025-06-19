@@ -60,6 +60,22 @@ router.post('/', verifyToken, async (req, res) => {
   }
 });
 
+// PUT /api/projects/:id → proje güncelleme
+router.put('/:id', verifyToken, async (req, res) => {
+  try {
+    const updatedProject = await Project.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
+    res.json(updatedProject);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Proje güncellenemedi.' });
+  }
+});
+
+
 // ✅ Projeyi sil
 router.delete('/:id', verifyToken, async (req, res) => {
   try {

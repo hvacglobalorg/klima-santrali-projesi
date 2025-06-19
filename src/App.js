@@ -193,10 +193,10 @@ function DesignPage() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Sunucu hatası:', errorData);
-        throw new Error(errorData.message || 'Proje kaydedilemedi.');
-      }
+  const text = await response.text(); // önce text olarak al
+  console.error('Yanıt JSON değil:', text); // logla
+  throw new Error('Proje kaydedilemedi.');
+}
 
       alert('✅ Proje başarıyla kaydedildi!');
       navigate('/panel');
