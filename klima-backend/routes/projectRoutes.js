@@ -6,25 +6,26 @@ const verifyToken = require('../middleware/verifyToken');
 // ✅ Tüm projeleri getir (sadece giriş yapan kullanıcıya ait)
 router.get('/', verifyToken, async (req, res) => {
   try {
-    console.log('GET /api/projects çağrıldı');
-    console.log('Kullanıcı ID:', req.user?.id);
+    console.log('📥 [GET] /api/projects çağrıldı');
+    console.log('👤 Kullanıcı ID:', req.user?.id);
 
     const projects = await Project.find({ userId: req.user.id }).sort({ createdAt: -1 });
-    res.json(projects);
+    return res.json(projects);
   } catch (err) {
-    console.error('Projeler alınamadı:', err);
-    res.status(500).json({ message: 'Projeler alınamadı', error: err.message });
+    console.error('❌ Projeler alınamadı:', err);
+    return res.status(500).json({ message: 'Projeler alınamadı', error: err.message });
   }
 });
 
 // ✅ Yeni proje oluştur
 router.post('/', verifyToken, async (req, res) => {
   try {
-    console.log('POST /api/projects çağrıldı');
-    console.log('JWT kullanıcı bilgisi:', req.user);
-    console.log('Gönderilen body:', req.body);
+    console.log('📥 [POST] /api/projects çağrıldı');
+    console.log('📦 Gelen body:', req.body);
+    console.log('👤 Kullanıcı ID:', req.user?.id);
 
     if (!req.user || !req.user.id) {
+      console.warn('🚫 JWT geçersiz, user.id yok');
       return res.status(401).json({ message: 'Kullanıcı kimliği doğrulanamadı.' });
     }
 
@@ -38,22 +39,20 @@ router.post('/', verifyToken, async (req, res) => {
       units,
     } = req.body;
 
-    // Zorunlu alanlar ve varsayılan değer ataması
     const newProject = new Project({
       userId: req.user.id,
       projectName: typeof projectName === 'string' && projectName.trim() !== '' ? projectName.trim() : 'Yeni Proje',
       location: typeof location === 'string' && location.trim() !== '' ? location.trim() : 'Belirtilmedi',
-      altitude: altitude !== undefined && altitude !== null && !isNaN(Number(altitude)) ? Number(altitude) : null,
-      winterDryTemp: winterDryTemp !== undefined && winterDryTemp !== null && !isNaN(Number(winterDryTemp)) ? Number(winterDryTemp) : null,
-      summerDryTemp: summerDryTemp !== undefined && summerDryTemp !== null && !isNaN(Number(summerDryTemp)) ? Number(summerDryTemp) : null,
-      summerWetTemp: summerWetTemp !== undefined && summerWetTemp !== null && !isNaN(Number(summerWetTemp)) ? Number(summerWetTemp) : null,
+      altitude: !isNaN(Number(altitude)) ? Number(altitude) : null,
+      winterDryTemp: !isNaN(Number(winterDryTemp)) ? Number(winterDryTemp) : null,
+      summerDryTemp: !isNaN(Number(summerDryTemp)) ? Number(summerDryTemp) : null,
+      summerWetTemp: !isNaN(Number(summerWetTemp)) ? Number(summerWetTemp) : null,
       units: Array.isArray(units) ? units : [],
     });
 
     await newProject.save();
 
-    console.log('✅ Yeni proje kaydedildi:', newProject._id);
-
+    console.log('✅ Proje kaydedildi. ID:', newProject._id);
     return res.status(201).json({ message: 'Proje başarıyla kaydedildi', project: newProject });
   } catch (err) {
     console.error('❌ Proje kaydedilirken hata oluştu:', err);
@@ -64,16 +63,19 @@ router.post('/', verifyToken, async (req, res) => {
 // ✅ Projeyi sil
 router.delete('/:id', verifyToken, async (req, res) => {
   try {
+    console.log('🗑️ [DELETE] /api/projects/:id çağrıldı');
     const project = await Project.findOne({
       _id: req.params.id,
       userId: req.user.id,
     });
 
     if (!project) {
+      console.warn('🚫 Proje bulunamadı veya yetkisiz erişim:', req.params.id);
       return res.status(404).json({ message: 'Proje bulunamadı veya yetkisiz erişim' });
     }
 
     await project.deleteOne();
+    console.log('✅ Proje silindi:', req.params.id);
     return res.json({ message: 'Proje silindi' });
   } catch (err) {
     console.error('❌ Proje silinirken hata oluştu:', err);

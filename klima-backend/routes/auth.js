@@ -2,22 +2,28 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');  // Modeli sonra oluşturacağız
+const User = require('../models/User');  // Modeli oluşturduysan tamam
 
 // Kullanıcı kayıt endpoint'i
 router.post('/register', async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { username, email, password } = req.body;
 
     // Basit validasyon
-    if (!email || !password) {
-      return res.status(400).json({ message: 'E-posta ve şifre zorunludur.' });
+    if (!username || !email || !password) {
+      return res.status(400).json({ message: 'Kullanıcı adı, e-posta ve şifre zorunludur.' });
     }
 
-    // Aynı email var mı kontrolü
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
+    // Aynı email veya kullanıcı adı var mı kontrolü
+    const existingEmail = await User.findOne({ email });
+    const existingUsername = await User.findOne({ username });
+
+    if (existingEmail) {
       return res.status(400).json({ message: 'Bu e-posta zaten kayıtlı.' });
+    }
+
+    if (existingUsername) {
+      return res.status(400).json({ message: 'Bu kullanıcı adı alınmış.' });
     }
 
     // Şifreyi hash'le
@@ -25,7 +31,7 @@ router.post('/register', async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     // Yeni kullanıcı oluştur
-    const newUser = new User({ email, password: hashedPassword });
+    const newUser = new User({ username, email, password: hashedPassword });
     await newUser.save();
 
     res.status(201).json({ message: 'Kayıt başarılı.' });
@@ -52,8 +58,12 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ message: 'E-posta veya şifre yanlış.' });
     }
 
-    // JWT Token üret (örnek, gizli anahtarı .env'den okuyacağız)
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    // JWT Token üret (kullanıcı adı da dahil)
+    const token = jwt.sign(
+      { userId: user._id, username: user.username },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
 
     res.json({ token, message: 'Giriş başarılı.' });
   } catch (error) {

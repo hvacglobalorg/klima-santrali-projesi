@@ -48,6 +48,7 @@ const DashboardPage = () => {
 
   const handleCreateProject = async (redirectToDesign = false) => {
     const token = localStorage.getItem('token');
+console.log('Dashboard - token:', token);
     if (!token) {
       alert('Giriş yapmanız gerekiyor.');
       navigate('/giris');

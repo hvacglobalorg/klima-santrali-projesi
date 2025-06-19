@@ -5,6 +5,7 @@ const RegisterPage = () => {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
+    username: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -20,57 +21,62 @@ const RegisterPage = () => {
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  const validationErrors = {};
+    const validationErrors = {};
 
-  if (!formData.email.trim()) {
-    validationErrors.email = 'E-posta zorunludur.';
-  } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-    validationErrors.email = 'Geçerli bir e-posta giriniz.';
-  }
+    if (!formData.username.trim()) {
+      validationErrors.username = 'Kullanıcı adı zorunludur.';
+    }
 
-  if (!formData.password) {
-    validationErrors.password = 'Şifre zorunludur.';
-  } else if (formData.password.length < 6) {
-    validationErrors.password = 'Şifre en az 6 karakter olmalı.';
-  }
+    if (!formData.email.trim()) {
+      validationErrors.email = 'E-posta zorunludur.';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      validationErrors.email = 'Geçerli bir e-posta giriniz.';
+    }
 
-  if (!formData.confirmPassword) {
-    validationErrors.confirmPassword = 'Şifre tekrar zorunludur.';
-  } else if (formData.password !== formData.confirmPassword) {
-    validationErrors.confirmPassword = 'Şifreler uyuşmuyor.';
-  }
+    if (!formData.password) {
+      validationErrors.password = 'Şifre zorunludur.';
+    } else if (formData.password.length < 6) {
+      validationErrors.password = 'Şifre en az 6 karakter olmalı.';
+    }
 
-  if (Object.keys(validationErrors).length > 0) {
-    setErrors(validationErrors);
-    return;
-  }
+    if (!formData.confirmPassword) {
+      validationErrors.confirmPassword = 'Şifre tekrar zorunludur.';
+    } else if (formData.password !== formData.confirmPassword) {
+      validationErrors.confirmPassword = 'Şifreler uyuşmuyor.';
+    }
 
-  try {
-    const response = await fetch('https://klima-backend-ggo2.onrender.com/api/auth/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: formData.email,
-        password: formData.password
-      }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      setErrors({ general: data.message || 'Kayıt başarısız oldu.' });
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
       return;
     }
 
-    alert('Kayıt başarılı! Giriş sayfasına yönlendiriliyorsunuz.');
-    navigate('/giris');
+    try {
+      const response = await fetch('https://klima-backend-ggo2.onrender.com/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: formData.username,
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
 
-  } catch (error) {
-    setErrors({ general: 'Sunucuya bağlanırken hata oluştu.' });
-  }
-};
+      const data = await response.json();
+
+      if (!response.ok) {
+        setErrors({ general: data.message || 'Kayıt başarısız oldu.' });
+        return;
+      }
+
+      alert('Kayıt başarılı! Giriş sayfasına yönlendiriliyorsunuz.');
+      navigate('/giris');
+
+    } catch (error) {
+      setErrors({ general: 'Sunucuya bağlanırken hata oluştu.' });
+    }
+  };
 
   return (
     <div style={{
@@ -90,6 +96,26 @@ const RegisterPage = () => {
             {errors.general}
           </p>
         )}
+
+        <div style={{ marginBottom: '15px' }}>
+          <label htmlFor="username">Kullanıcı Adı:</label><br />
+          <input
+            id="username"
+            type="text"
+            name="username"
+            placeholder="Kullanıcı adınızı girin"
+            value={formData.username}
+            onChange={handleChange}
+            style={{
+              width: '100%',
+              padding: '8px',
+              fontSize: '14px',
+              borderRadius: '4px',
+              border: errors.username ? '1px solid red' : '1px solid #ccc',
+            }}
+          />
+          {errors.username && <p style={{ color: 'red', marginTop: '5px' }}>{errors.username}</p>}
+        </div>
 
         <div style={{ marginBottom: '15px' }}>
           <label htmlFor="email">E-posta:</label><br />
