@@ -93,7 +93,16 @@ function DesignPage() {
             summerDB: data.summerDryTemp || '',
             summerWB: data.summerWetTemp || '',
           });
-          setUnits(data.units || [createNewUnit(1)]);
+          if (Array.isArray(data.units)) {
+  const processedUnits = data.units.map((u, i) => ({
+    id: u.id ?? i + 1,
+    ...u
+  }));
+  setUnits(processedUnits);
+} else {
+  setUnits([createNewUnit(1)]);
+}
+
           setUploadedFiles(data.uploadedFiles || []);
         })
         .catch((err) => {
@@ -160,7 +169,11 @@ function DesignPage() {
     });
   };
 
-  const getUnitName = (id) => `KS-${id.toString().padStart(2, '0')}`;
+const getUnitName = (id) => {
+  if (typeof id !== 'number' && typeof id !== 'string') return 'KS-XX';
+  return `KS-${id.toString().padStart(2, '0')}`;
+};
+
 
   // 🔧 Projeyi kaydederken PUT mu POST mu karar ver
   const handleSaveProject = async () => {
