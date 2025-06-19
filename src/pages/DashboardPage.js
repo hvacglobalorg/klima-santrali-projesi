@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';  // named import olarak
 
 const DashboardPage = () => {
   const navigate = useNavigate();
@@ -8,22 +8,22 @@ const DashboardPage = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
-
   const [username, setUsername] = useState('');
 
   useEffect(() => {
-    // Token'dan kullanıcı adını çek
     const token = localStorage.getItem('token');
-    if (token) {
-      try {
-        const decoded = jwtDecode(token);
-        setUsername(decoded.username || '');
-      } catch (error) {
-        console.error('Token decode edilirken hata:', error);
-      }
+    if (!token) {
+      navigate('/giris');
+      return;
     }
 
-    if (!token) {
+    try {
+      const decoded = jwtDecode(token);
+      setUsername(decoded.username || '');
+    } catch (error) {
+      console.error('Token decode edilirken hata:', error);
+      // Token geçersizse çıkış yap
+      localStorage.removeItem('token');
       navigate('/giris');
       return;
     }
@@ -60,7 +60,6 @@ const DashboardPage = () => {
 
   const handleCreateProject = async (redirectToDesign = false) => {
     const token = localStorage.getItem('token');
-    console.log('Dashboard - token:', token);
     if (!token) {
       alert('Giriş yapmanız gerekiyor.');
       navigate('/giris');
@@ -152,38 +151,39 @@ const DashboardPage = () => {
 
   return (
     <div style={{ padding: 20, maxWidth: 900, margin: '0 auto', position: 'relative' }}>
-      {/* Kullanıcı adı sağ üstte */}
-      <div style={{
-        position: 'absolute',
-        top: 20,
-        right: 20,
-        fontWeight: 'bold',
-        fontSize: '1rem',
-        backgroundColor: '#e0e0e0',
-        padding: '6px 12px',
-        borderRadius: 20,
-        userSelect: 'none',
-        color: '#333',
-      }}>
-        Hoşgeldin, {username || 'Ziyaretçi'}
-      </div>
-
+      {/* Başlık ve Kullanıcı + Çıkış Butonu yatay hizalı */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
         <h2>📁 Kayıtlı Projeler</h2>
-        <button
-          onClick={handleLogout}
-          style={{
-            padding: '8px 16px',
-            backgroundColor: '#e53935',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 5,
-            cursor: 'pointer',
-            fontWeight: 'bold',
-          }}
-        >
-          Çıkış Yap
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+          <span
+            style={{
+              fontWeight: 'bold',
+              fontSize: '1rem',
+              backgroundColor: '#e0e0e0',
+              padding: '6px 12px',
+              borderRadius: 20,
+              userSelect: 'none',
+              color: '#333',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            Hoşgeldin, {username || 'Ziyaretçi'}
+          </span>
+          <button
+            onClick={handleLogout}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: '#e53935',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 5,
+              cursor: 'pointer',
+              fontWeight: 'bold',
+            }}
+          >
+            Çıkış Yap
+          </button>
+        </div>
       </div>
 
       {loading ? (
@@ -211,14 +211,19 @@ const DashboardPage = () => {
             >
               <div>
                 <h3>{proj.projectName || 'İsimsiz Proje'}</h3>
-                <p><strong>Konum:</strong> {proj.location}</p>
+                <p>
+                  <strong>Konum:</strong> {proj.location}
+                </p>
                 <p style={{ fontSize: '0.85rem', color: '#777' }}>
                   Oluşturulma: {new Date(proj.createdAt).toLocaleString()}
                 </p>
               </div>
               <div style={{ marginTop: 15, display: 'flex', justifyContent: 'space-between' }}>
                 <button
-                  onClick={(e) => { e.stopPropagation(); handleEditProject(proj._id); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleEditProject(proj._id);
+                  }}
                   style={{
                     backgroundColor: '#4caf50',
                     color: 'white',
@@ -233,7 +238,10 @@ const DashboardPage = () => {
                   Düzenle
                 </button>
                 <button
-                  onClick={(e) => { e.stopPropagation(); handleDeleteProject(proj._id); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteProject(proj._id);
+                  }}
                   style={{
                     backgroundColor: '#f44336',
                     color: 'white',
@@ -271,13 +279,29 @@ const DashboardPage = () => {
 
       {/* MODAL */}
       {showModal && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center'
-        }}>
-          <div style={{
-            backgroundColor: '#fff', padding: 30, borderRadius: 10, width: '90%', maxWidth: 420, textAlign: 'center'
-          }}>
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: '#fff',
+              padding: 30,
+              borderRadius: 10,
+              width: '90%',
+              maxWidth: 420,
+              textAlign: 'center',
+            }}
+          >
             <h3 style={{ marginBottom: 15 }}>📝 Yeni Proje Oluştur</h3>
             <input
               type="text"
@@ -289,7 +313,15 @@ const DashboardPage = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <button
                 onClick={() => handleCreateProject(true)}
-                style={{ padding: 12, backgroundColor: '#4caf50', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 16 }}
+                style={{
+                  padding: 12,
+                  backgroundColor: '#4caf50',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: 6,
+                  cursor: 'pointer',
+                  fontSize: 16,
+                }}
               >
                 ➕ Klima Santrali Ekle
               </button>
@@ -306,12 +338,24 @@ const DashboardPage = () => {
             <hr style={{ margin: '20px 0' }} />
             <button
               onClick={() => handleCreateProject(false)}
-              style={{ marginTop: 10, padding: 10, backgroundColor: '#1976d2', color: 'white', border: 'none', borderRadius: 6, fontSize: 16, cursor: 'pointer' }}
+              style={{
+                marginTop: 10,
+                padding: 10,
+                backgroundColor: '#1976d2',
+                color: 'white',
+                border: 'none',
+                borderRadius: 6,
+                fontSize: 16,
+                cursor: 'pointer',
+              }}
             >
               💾 Sadece Projeyi Kaydet
             </button>
             <br />
-            <button onClick={() => setShowModal(false)} style={{ marginTop: 10, background: 'none', border: 'none', color: '#555', cursor: 'pointer', textDecoration: 'underline' }}>
+            <button
+              onClick={() => setShowModal(false)}
+              style={{ marginTop: 10, background: 'none', border: 'none', color: '#555', cursor: 'pointer', textDecoration: 'underline' }}
+            >
               Vazgeç
             </button>
           </div>

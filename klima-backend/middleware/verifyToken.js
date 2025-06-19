@@ -15,8 +15,11 @@ const verifyToken = (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // ✅ DÜZELTİLDİ: doğru alanı alıyoruz (userId)
-    req.user = { id: decoded.userId };
+    // 👇 username'i de ekle!
+    req.user = {
+      id: decoded.userId,
+      username: decoded.username,
+    };
 
     next();
   } catch (err) {
