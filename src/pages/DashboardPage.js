@@ -19,6 +19,7 @@ const DashboardPage = () => {
 
     try {
       const decoded = jwtDecode(token);
+       console.log('📦 JWT içeriği:', decoded); // burayı konsolda kontrol et
       setUsername(decoded.username || '');
     } catch (error) {
       console.error('Token decode edilirken hata:', error);
@@ -156,19 +157,21 @@ const DashboardPage = () => {
         <h2>📁 Kayıtlı Projeler</h2>
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
           <span
-            style={{
-              fontWeight: 'bold',
-              fontSize: '1rem',
-              backgroundColor: '#e0e0e0',
-              padding: '6px 12px',
-              borderRadius: 20,
-              userSelect: 'none',
-              color: '#333',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            Hoşgeldin, {username || 'Ziyaretçi'}
-          </span>
+  style={{
+    fontWeight: 'bold',
+    fontSize: '1rem',
+    backgroundColor: '#e0e0e0',
+    padding: '6px 12px',
+    borderRadius: 20,
+    userSelect: 'none',
+    color: '#333',
+    whiteSpace: 'nowrap',
+  }}
+>
+-   Hoşgeldin, {username || 'Ziyaretçi'}
++   {username ? `Hoşgeldin, ${username}` : 'Giriş yapılmadı'}
+</span>
+
           <button
             onClick={handleLogout}
             style={{
