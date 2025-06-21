@@ -41,3 +41,6 @@ app.use('/api/projects', projectRoutes);
 app.listen(port, () => {
   console.log(`🚀 Sunucu http://localhost:${port} adresinde çalışıyor`);
 });
+
+const adminRoutes = require('./routes/admin');
+app.use('/api/admin', adminRoutes);

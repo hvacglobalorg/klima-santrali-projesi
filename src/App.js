@@ -3,6 +3,7 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import citiesData from './data/CitiesData';
 import SantralForm from './SantralForm';
+import AdminPanel from './pages/AdminPanel';
 import './App.css';
 
 import {
@@ -338,6 +339,7 @@ function App() {
           <Route path="/giris" element={<LoginPage />} />
           <Route path="/kayit" element={<RegisterPage />} />
           <Route path="/panel" element={<DashboardPage />} />
+          <Route path="/admin" element={<AdminPanel />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>
