@@ -142,9 +142,33 @@ function DesignPage() {
     setUnits(units.map((unit) => (unit.id === id ? { ...unit, ...newData } : unit)));
   };
 
-  const handleFileUpload = (e) => {
-    setUploadedFiles(e.target.files);
-  };
+  const handleFileUpload = async (e) => {
+  const files = e.target.files;
+  const formData = new FormData();
+
+  for (let file of files) {
+    if (file.size > 5 * 1024 * 1024) {
+      alert(`${file.name} dosyası 5 MB'tan büyük. Lütfen daha küçük bir dosya seçin.`);
+      return; // büyük dosya varsa işlemi tamamen iptal eder
+    }
+    formData.append('files', file);
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/upload`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    const data = await response.json();
+    setUploadedFiles(data.uploadedFiles);
+  } catch (err) {
+    console.error('❌ Dosya yüklenemedi:', err);
+    alert('Dosya yüklenemedi.');
+  }
+};
+
+
 
   const generatePDF = () => {
     const input = pdfRef.current;
@@ -309,12 +333,21 @@ const getUnitName = (id) => {
           className="file-input"
         />
         {uploadedFiles.length > 0 && (
-          <ul className="uploaded-file-list">
-            {Array.from(uploadedFiles).map((file, index) => (
-              <li key={index}>{file.name}</li>
-            ))}
-          </ul>
-        )}
+  <ul className="uploaded-file-list">
+    {uploadedFiles.map((fileName, index) => (
+      <li key={index}>
+        <a
+          href={`${API_BASE_URL}/uploads/${fileName}`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          📎 {fileName}
+        </a>
+      </li>
+    ))}
+  </ul>
+)}
+
       </div>
 
       <div className="btn-group">
