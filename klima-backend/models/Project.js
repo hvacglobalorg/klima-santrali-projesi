@@ -7,9 +7,27 @@ const unitSchema = new mongoose.Schema({
   aspFlow: String,
   aspPressure: String,
   heatingNeed: String,
+  heatingType: String,
+  heatingCapacity: String,
   coolingNeed: String,
-  reheaterNeed: String,
-});
+  coolingType: String,
+  coolingCapacity: String,
+  humidNeed: String,
+  humidType: String,
+  humidCapacity: String,
+  advancedEnabled: Boolean,
+  winterTemp: Number,
+  summerTemp: Number,
+  customWidth: String,
+  customLength: String,
+  customHeight: String,
+  isHygienic: Boolean,
+  silencer: String,
+  silencerFan: Boolean,
+  silencerExhaust: Boolean,
+  recoveryType: String,
+  mixingType: String,
+}, { _id: false });
 
 const projectSchema = new mongoose.Schema({
   userId: {
@@ -18,11 +36,10 @@ const projectSchema = new mongoose.Schema({
     ref: 'User',
   },
   projectName: {
-  type: String,
-  required: true,
-  default: 'Yeni Proje',
-},
-
+    type: String,
+    required: true,
+    default: 'Yeni Proje',
+  },
   location: {
     type: String,
     default: 'Belirtilmedi',
@@ -47,10 +64,10 @@ const projectSchema = new mongoose.Schema({
     type: [unitSchema],
     default: [],
   },
-  createdAt: {
-    type: Date,
-    default: Date.now,
+  uploadedFiles: {
+    type: [String],
+    default: [],
   },
-});
+}, { timestamps: true }); // createdAt ve updatedAt otomatik
 
 module.exports = mongoose.model('Project', projectSchema);

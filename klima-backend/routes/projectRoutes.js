@@ -7,8 +7,6 @@ const verifyToken = require('../middleware/verifyToken');
 router.get('/', verifyToken, async (req, res) => {
   try {
     console.log('📥 [GET] /api/projects çağrıldı');
-    console.log('👤 Kullanıcı ID:', req.user?.id);
-
     const projects = await Project.find({ userId: req.user.id }).sort({ createdAt: -1 });
     return res.json(projects);
   } catch (err) {
@@ -17,23 +15,16 @@ router.get('/', verifyToken, async (req, res) => {
   }
 });
 
-// ✅ Belirli bir projeyi ID ile getir (edit mode için)
+// ✅ Belirli bir projeyi ID ile getir (edit mode veya admin için)
 router.get('/:id', verifyToken, async (req, res) => {
   try {
-    console.log('📥 [GET] /api/projects/:id çağrıldı:', req.params.id);
-   const project = await Project.findById(req.params.id);
+    const project = await Project.findById(req.params.id);
 
-// Eğer admin değilse ve proje kendisine ait değilse reddet
-if (
-  !project ||
-  (req.user.username !== 'admin' && project.userId.toString() !== req.user.id)
-) {
-  return res.status(403).json({ message: 'Proje görüntüleme yetkiniz yok.' });
-}
-
-
-    if (!project) {
-      return res.status(404).json({ message: 'Proje bulunamadı veya erişim reddedildi' });
+    if (
+      !project ||
+      (req.user.username !== 'admin' && project.userId.toString() !== req.user.id)
+    ) {
+      return res.status(403).json({ message: 'Proje görüntüleme yetkiniz yok.' });
     }
 
     return res.json(project);
@@ -47,13 +38,6 @@ if (
 router.post('/', verifyToken, async (req, res) => {
   try {
     console.log('📥 [POST] /api/projects çağrıldı');
-    console.log('📦 Gelen body:', req.body);
-    console.log('👤 Kullanıcı ID:', req.user?.id);
-
-    if (!req.user || !req.user.id) {
-      console.warn('🚫 JWT geçersiz, user.id yok');
-      return res.status(401).json({ message: 'Kullanıcı kimliği doğrulanamadı.' });
-    }
 
     const {
       projectName,
@@ -63,53 +47,51 @@ router.post('/', verifyToken, async (req, res) => {
       summerDryTemp,
       summerWetTemp,
       units,
+      uploadedFiles,
     } = req.body;
 
     const newProject = new Project({
       userId: req.user.id,
-      projectName: typeof projectName === 'string' && projectName.trim() !== '' ? projectName.trim() : 'Yeni Proje',
-      location: typeof location === 'string' && location.trim() !== '' ? location.trim() : 'Belirtilmedi',
-      altitude: !isNaN(Number(altitude)) ? Number(altitude) : null,
-      winterDryTemp: !isNaN(Number(winterDryTemp)) ? Number(winterDryTemp) : null,
-      summerDryTemp: !isNaN(Number(summerDryTemp)) ? Number(summerDryTemp) : null,
-      summerWetTemp: !isNaN(Number(summerWetTemp)) ? Number(summerWetTemp) : null,
+      projectName: projectName?.trim() || 'Yeni Proje',
+      location: location?.trim() || 'Belirtilmedi',
+      altitude: Number(altitude) || null,
+      winterDryTemp: Number(winterDryTemp) || null,
+      summerDryTemp: Number(summerDryTemp) || null,
+      summerWetTemp: Number(summerWetTemp) || null,
       units: Array.isArray(units) ? units : [],
+      uploadedFiles: Array.isArray(uploadedFiles) ? uploadedFiles : [],
     });
 
     await newProject.save();
-
-    console.log('✅ Proje kaydedildi. ID:', newProject._id);
     return res.status(201).json({ message: 'Proje başarıyla kaydedildi', project: newProject });
   } catch (err) {
-    console.error('❌ Proje kaydedilirken hata oluştu:', err);
+    console.error('❌ Proje kaydedilemedi:', err);
     return res.status(500).json({ message: 'Proje kaydedilemedi', error: err.message });
   }
 });
 
-// ✅ Mevcut projeyi güncelle (edit mode için)
+// ✅ Mevcut projeyi güncelle (kendi projesi veya adminse)
 router.put('/:id', verifyToken, async (req, res) => {
   try {
     console.log('🛠️ [PUT] /api/projects/:id çağrıldı');
-    const updatedProject = await Project.findOneAndUpdate(
-      { _id: req.params.id, userId: req.user.id },
-      req.body,
-      { new: true }
-    );
 
-    if (!updatedProject) {
-      console.warn('🚫 Güncellenecek proje bulunamadı:', req.params.id);
-      return res.status(404).json({ message: 'Proje bulunamadı veya yetkisiz erişim' });
+    const project = await Project.findById(req.params.id);
+    if (!project || (req.user.username !== 'admin' && project.userId.toString() !== req.user.id)) {
+      return res.status(403).json({ message: 'Yetkisiz erişim' });
     }
 
-    console.log('✅ Proje güncellendi:', updatedProject._id);
-    return res.json(updatedProject);
+    Object.assign(project, req.body);
+    await project.save();
+
+    console.log('✅ Proje güncellendi:', project._id);
+    return res.json(project);
   } catch (err) {
     console.error('❌ Proje güncellenemedi:', err);
     return res.status(500).json({ message: 'Proje güncellenemedi', error: err.message });
   }
 });
 
-// ✅ Projeyi sil
+// ✅ Projeyi sil (sadece kendi projesini)
 router.delete('/:id', verifyToken, async (req, res) => {
   try {
     console.log('🗑️ [DELETE] /api/projects/:id çağrıldı');
@@ -119,7 +101,6 @@ router.delete('/:id', verifyToken, async (req, res) => {
     });
 
     if (!project) {
-      console.warn('🚫 Proje bulunamadı veya yetkisiz erişim:', req.params.id);
       return res.status(404).json({ message: 'Proje bulunamadı veya yetkisiz erişim' });
     }
 
@@ -127,7 +108,7 @@ router.delete('/:id', verifyToken, async (req, res) => {
     console.log('✅ Proje silindi:', req.params.id);
     return res.json({ message: 'Proje silindi' });
   } catch (err) {
-    console.error('❌ Proje silinirken hata oluştu:', err);
+    console.error('❌ Proje silinemedi:', err);
     return res.status(500).json({ message: 'Proje silinemedi', error: err.message });
   }
 });
