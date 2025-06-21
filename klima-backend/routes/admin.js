@@ -4,15 +4,14 @@ const User = require('../models/User');
 const Project = require('../models/Project');
 const verifyToken = require('../middleware/verifyToken');
 
-const ADMIN_EMAIL = 'hvacglobalorg@gmail.com'; // buraya sadece senin e-posta adresin gelecek
+const ADMIN_EMAIL = 'hvacglobalorg@gmail.com';
 
 router.get('/users-projects', verifyToken, async (req, res) => {
-  try {
-    const adminUser = await User.findById(req.user.id);
-    if (!adminUser || adminUser.email !== ADMIN_EMAIL) {
-      return res.status(403).json({ message: 'Yalnızca admin erişebilir.' });
-    }
+  if (req.user.username !== 'admin') {
+    return res.status(403).json({ message: 'Yalnızca admin erişebilir.' });
+  }
 
+  try {
     const users = await User.find({}, 'username email');
     const projects = await Project.find();
 

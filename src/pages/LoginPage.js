@@ -60,11 +60,12 @@ setErrors({});
 
 // Token'ı çöz ve admin mi kontrol et
 const decoded = jwtDecode(data.token);
-if (decoded && decoded.email === 'hvacglobalorg@gmail.com') {
+if (decoded && decoded.username === 'admin') {
   navigate('/admin');
 } else {
   navigate('/panel');
 }
+
 
 
 
