@@ -191,7 +191,7 @@ useEffect(() => {
   }
 
   try {
-    const response = await fetch('https://klima-backend-ggo2.onrender.com/api/auth/change-username', {
+    const response = await fetch('https://klima-backend-ggo2.onrender.com/api/auth/update-username', {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
