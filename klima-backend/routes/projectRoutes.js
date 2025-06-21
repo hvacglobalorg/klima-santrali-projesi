@@ -21,10 +21,16 @@ router.get('/', verifyToken, async (req, res) => {
 router.get('/:id', verifyToken, async (req, res) => {
   try {
     console.log('📥 [GET] /api/projects/:id çağrıldı:', req.params.id);
-    const project = await Project.findOne({
-      _id: req.params.id,
-      userId: req.user.id,
-    });
+   const project = await Project.findById(req.params.id);
+
+// Eğer admin değilse ve proje kendisine ait değilse reddet
+if (
+  !project ||
+  (req.user.username !== 'admin' && project.userId.toString() !== req.user.id)
+) {
+  return res.status(403).json({ message: 'Proje görüntüleme yetkiniz yok.' });
+}
+
 
     if (!project) {
       return res.status(404).json({ message: 'Proje bulunamadı veya erişim reddedildi' });
