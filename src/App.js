@@ -210,7 +210,7 @@ const getUnitName = (id) => {
       summerDryTemp: Number(climateData.summerDB),
       summerWetTemp: Number(climateData.summerWB),
       units,
-      uploadedFiles: Array.from(uploadedFiles).map((f) => f.name),
+      uploadedFiles: uploadedFiles, // zaten bir string dizisi
       updatedAt: new Date().toISOString(),
     };
 
