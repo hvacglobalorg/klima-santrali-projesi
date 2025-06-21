@@ -60,11 +60,16 @@ router.post('/login', async (req, res) => {
     }
 
     // JWT Token üret (kullanıcı adı da dahil)
-    const token = jwt.sign(
-      { userId: user._id, username: user.username },
-      process.env.JWT_SECRET,
-      { expiresIn: '1h' }
-    );
+ const token = jwt.sign(
+  {
+    userId: user._id,
+    username: user.username,
+    email: user.email, // ← burası eklendi
+  },
+  process.env.JWT_SECRET,
+  { expiresIn: '1h' }
+);
+
 
     res.json({ token, message: 'Giriş başarılı.' });
   } catch (error) {

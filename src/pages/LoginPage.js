@@ -56,8 +56,17 @@
         console.log('Gelen token:', data.token);
 console.log('Çözülmüş token:', jwtDecode(data.token));
         localStorage.setItem('token', data.token);
-        setErrors({});
-        navigate('/panel'); // Giriş sonrası panel sayfasına yönlendir
+setErrors({});
+
+// Token'ı çöz ve admin mi kontrol et
+const decoded = jwtDecode(data.token);
+if (decoded && decoded.email === 'hvacglobalorg@gmail.com') {
+  navigate('/admin');
+} else {
+  navigate('/panel');
+}
+
+
 
       } catch (error) {
         setErrors({ general: 'Sunucuya bağlanırken hata oluştu.' });
