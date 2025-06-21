@@ -72,4 +72,44 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// Kullanıcı adı güncelle
+router.put('/update-username', verifyToken, async (req, res) => {
+  const { newUsername } = req.body;
+  if (!newUsername) return res.status(400).json({ message: 'Yeni kullanıcı adı gerekli.' });
+
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { username: newUsername },
+      { new: true }
+    );
+    res.json({ message: 'Kullanıcı adı güncellendi', username: user.username });
+  } catch (err) {
+    res.status(500).json({ message: 'Kullanıcı adı güncellenemedi', error: err.message });
+  }
+});
+
+// Şifre güncelle
+router.put('/update-password', verifyToken, async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ message: 'Mevcut ve yeni şifre gereklidir.' });
+  }
+
+  try {
+    const user = await User.findById(req.user.id);
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) return res.status(401).json({ message: 'Mevcut şifre hatalı.' });
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+    user.password = hashed;
+    await user.save();
+
+    res.json({ message: 'Şifre başarıyla güncellendi' });
+  } catch (err) {
+    res.status(500).json({ message: 'Şifre güncellenemedi', error: err.message });
+  }
+});
+
+
 module.exports = router;

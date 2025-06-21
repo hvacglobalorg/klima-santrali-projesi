@@ -3,22 +3,6 @@ import './DashboardPage.css';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';  // named import olarak
 
-const dropdownButtonStyle = {
-  display: 'block',
-  width: '100%',
-  padding: '10px 15px',
-  backgroundColor: '#f7f7f7',
-  border: 'none',
-  textAlign: 'left',
-  cursor: 'pointer',
-  fontSize: '0.95rem',
-  color: '#333',
-  transition: 'background-color 0.2s',
-};
-
-const dropdownButtonHoverStyle = {
-  backgroundColor: '#eaeaea',
-};
 
 const DashboardPage = () => {
   const navigate = useNavigate();
@@ -28,6 +12,9 @@ const DashboardPage = () => {
   const [newProjectName, setNewProjectName] = useState('');
   const [username, setUsername] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showUsernameModal, setShowUsernameModal] = useState(false);
+const [newUsername, setNewUsername] = useState('');
+
 
 const toggleDropdown = () => {
   setShowDropdown((prev) => !prev);
@@ -38,11 +25,12 @@ const handleAccountOption = (option) => {
   if (option === 'profile') {
     navigate('/panel');
   } else if (option === 'username') {
-    alert('Kullanıcı adı değiştirme yakında!');
+    setShowUsernameModal(true); // <<< değişti
   } else if (option === 'password') {
     alert('Şifre değiştirme yakında!');
   }
 };
+
 
 
 // Dış tıklamada dropdown menüyü kapat
@@ -195,6 +183,39 @@ useEffect(() => {
     }
   };
 
+  const handleUsernameChange = async () => {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    alert('Giriş yapmanız gerekiyor.');
+    return;
+  }
+
+  try {
+    const response = await fetch('https://klima-backend-ggo2.onrender.com/api/auth/change-username', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ newUsername }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Kullanıcı adı değiştirilemedi.');
+    }
+
+    alert('Kullanıcı adınız başarıyla değiştirildi.');
+    setUsername(newUsername);
+    setShowUsernameModal(false);
+    setNewUsername('');
+  } catch (error) {
+    alert('Hata oluştu: ' + error.message);
+  }
+};
+
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     navigate('/giris');
@@ -336,92 +357,180 @@ useEffect(() => {
         </button>
       </div>
 
-      {/* MODAL */}
-      {showModal && (
-        <div
+     {/* MODAL */}
+{showModal && (
+  <div
+    style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+    }}
+  >
+    <div
+      style={{
+        backgroundColor: '#fff',
+        padding: 30,
+        borderRadius: 10,
+        width: '90%',
+        maxWidth: 420,
+        textAlign: 'center',
+      }}
+    >
+      <h3 style={{ marginBottom: 15 }}>📝 Yeni Proje Oluştur</h3>
+      <input
+        type="text"
+        value={newProjectName}
+        onChange={(e) => setNewProjectName(e.target.value)}
+        placeholder="Proje adı giriniz"
+        style={{
+          width: '100%',
+          padding: 12,
+          marginBottom: 20,
+          borderRadius: 5,
+          border: '1px solid #ccc',
+        }}
+      />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <button
+          onClick={() => handleCreateProject(true)}
           style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
+            padding: 12,
+            backgroundColor: '#4caf50',
+            color: 'white',
+            border: 'none',
+            borderRadius: 6,
+            cursor: 'pointer',
+            fontSize: 16,
           }}
         >
-          <div
-            style={{
-              backgroundColor: '#fff',
-              padding: 30,
-              borderRadius: 10,
-              width: '90%',
-              maxWidth: 420,
-              textAlign: 'center',
-            }}
-          >
-            <h3 style={{ marginBottom: 15 }}>📝 Yeni Proje Oluştur</h3>
-            <input
-              type="text"
-              value={newProjectName}
-              onChange={(e) => setNewProjectName(e.target.value)}
-              placeholder="Proje adı giriniz"
-              style={{ width: '100%', padding: 12, marginBottom: 20, borderRadius: 5, border: '1px solid #ccc' }}
-            />
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <button
-                onClick={() => handleCreateProject(true)}
-                style={{
-                  padding: 12,
-                  backgroundColor: '#4caf50',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                  fontSize: 16,
-                }}
-              >
-                ➕ Klima Santrali Ekle
-              </button>
-              <button disabled style={{ padding: 12, backgroundColor: '#ccc', border: 'none', borderRadius: 6, cursor: 'not-allowed', fontSize: 16 }}>
-                ♻️ Isı Geri Kazanım Cihazı (yakında)
-              </button>
-              <button disabled style={{ padding: 12, backgroundColor: '#ccc', border: 'none', borderRadius: 6, cursor: 'not-allowed', fontSize: 16 }}>
-                🌬️ Aspiratör (yakında)
-              </button>
-              <button disabled style={{ padding: 12, backgroundColor: '#ccc', border: 'none', borderRadius: 6, cursor: 'not-allowed', fontSize: 16 }}>
-                💨 Fan-Coil (yakında)
-              </button>
-            </div>
-            <hr style={{ margin: '20px 0' }} />
-            <button
-              onClick={() => handleCreateProject(false)}
-              style={{
-                marginTop: 10,
-                padding: 10,
-                backgroundColor: '#1976d2',
-                color: 'white',
-                border: 'none',
-                borderRadius: 6,
-                fontSize: 16,
-                cursor: 'pointer',
-              }}
-            >
-              💾 Sadece Projeyi Kaydet
-            </button>
-            <br />
-            <button
-              onClick={() => setShowModal(false)}
-              style={{ marginTop: 10, background: 'none', border: 'none', color: '#555', cursor: 'pointer', textDecoration: 'underline' }}
-            >
-              Vazgeç
-            </button>
-          </div>
-        </div>
-      )}
+          ➕ Klima Santrali Ekle
+        </button>
+        <button disabled style={{ padding: 12, backgroundColor: '#ccc', border: 'none', borderRadius: 6, cursor: 'not-allowed', fontSize: 16 }}>
+          ♻️ Isı Geri Kazanım Cihazı (yakında)
+        </button>
+        <button disabled style={{ padding: 12, backgroundColor: '#ccc', border: 'none', borderRadius: 6, cursor: 'not-allowed', fontSize: 16 }}>
+          🌬️ Aspiratör (yakında)
+        </button>
+        <button disabled style={{ padding: 12, backgroundColor: '#ccc', border: 'none', borderRadius: 6, cursor: 'not-allowed', fontSize: 16 }}>
+          💨 Fan-Coil (yakında)
+        </button>
+      </div>
+      <hr style={{ margin: '20px 0' }} />
+      <button
+        onClick={() => handleCreateProject(false)}
+        style={{
+          marginTop: 10,
+          padding: 10,
+          backgroundColor: '#1976d2',
+          color: 'white',
+          border: 'none',
+          borderRadius: 6,
+          fontSize: 16,
+          cursor: 'pointer',
+        }}
+      >
+        💾 Sadece Projeyi Kaydet
+      </button>
+      <br />
+      <button
+        onClick={() => setShowModal(false)}
+        style={{
+          marginTop: 10,
+          background: 'none',
+          border: 'none',
+          color: '#555',
+          cursor: 'pointer',
+          textDecoration: 'underline',
+        }}
+      >
+        Vazgeç
+      </button>
     </div>
-  );
+  </div>
+)}
+
+{/* 👤 Kullanıcı Adı Değiştir MODAL */}
+{showUsernameModal && (
+  <div
+    style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 999,
+    }}
+  >
+    <div
+      style={{
+        backgroundColor: '#fff',
+        padding: 30,
+        borderRadius: 10,
+        width: '90%',
+        maxWidth: 400,
+        textAlign: 'center',
+      }}
+    >
+      <h3 style={{ marginBottom: 15 }}>👤 Yeni Kullanıcı Adı</h3>
+      <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
+  <input
+    type="text"
+    value={newUsername}
+    onChange={(e) => setNewUsername(e.target.value)}
+    placeholder="Yeni kullanıcı adınızı girin"
+    style={{
+      flex: 1,
+      padding: 12,
+      borderRadius: 5,
+      border: '1px solid #ccc',
+    }}
+  />
+  <button
+    onClick={handleUsernameChange}
+    style={{
+      padding: '12px 20px',
+      backgroundColor: '#1976d2',
+      color: 'white',
+      border: 'none',
+      borderRadius: 5,
+      fontSize: 14,
+      cursor: 'pointer',
+      whiteSpace: 'nowrap',
+    }}
+  >
+    Kaydet
+  </button>
+</div>
+
+      <br />
+      <button
+        onClick={() => setShowUsernameModal(false)}
+        style={{
+          marginTop: 10,
+          background: 'none',
+          border: 'none',
+          color: '#555',
+          cursor: 'pointer',
+          textDecoration: 'underline',
+        }}
+      >
+        Vazgeç
+      </button>
+    </div>
+  </div>
+)}
+</div>
+);
 };
 
 export default DashboardPage;
