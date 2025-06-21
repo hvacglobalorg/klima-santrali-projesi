@@ -1,6 +1,24 @@
 import React, { useEffect, useState } from 'react';
+import './DashboardPage.css';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';  // named import olarak
+
+const dropdownButtonStyle = {
+  display: 'block',
+  width: '100%',
+  padding: '10px 15px',
+  backgroundColor: '#f7f7f7',
+  border: 'none',
+  textAlign: 'left',
+  cursor: 'pointer',
+  fontSize: '0.95rem',
+  color: '#333',
+  transition: 'background-color 0.2s',
+};
+
+const dropdownButtonHoverStyle = {
+  backgroundColor: '#eaeaea',
+};
 
 const DashboardPage = () => {
   const navigate = useNavigate();
@@ -9,6 +27,38 @@ const DashboardPage = () => {
   const [showModal, setShowModal] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
   const [username, setUsername] = useState('');
+  const [showDropdown, setShowDropdown] = useState(false);
+
+const toggleDropdown = () => {
+  setShowDropdown((prev) => !prev);
+};
+
+const handleAccountOption = (option) => {
+  setShowDropdown(false);
+  if (option === 'profile') {
+    navigate('/panel');
+  } else if (option === 'username') {
+    alert('Kullanıcı adı değiştirme yakında!');
+  } else if (option === 'password') {
+    alert('Şifre değiştirme yakında!');
+  }
+};
+
+
+// Dış tıklamada dropdown menüyü kapat
+useEffect(() => {
+  const handleClickOutside = (event) => {
+    if (!event.target.closest('.user-dropdown')) {
+      setShowDropdown(false);
+    }
+  };
+
+  document.addEventListener('mousedown', handleClickOutside);
+  return () => {
+    document.removeEventListener('mousedown', handleClickOutside);
+  };
+}, []);
+
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -150,42 +200,48 @@ const DashboardPage = () => {
     navigate('/giris');
   };
 
-  return (
-    <div style={{ padding: 20, maxWidth: 900, margin: '0 auto', position: 'relative' }}>
-      {/* Başlık ve Kullanıcı + Çıkış Butonu yatay hizalı */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-        <h2>📁 Kayıtlı Projeler</h2>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-          <span
-  style={{
-    fontWeight: 'bold',
-    fontSize: '1rem',
-    backgroundColor: '#e0e0e0',
-    padding: '6px 12px',
-    borderRadius: 20,
-    userSelect: 'none',
-    color: '#333',
-    whiteSpace: 'nowrap',
-  }}
+ return (
+  <div style={{ padding: 20, maxWidth: 900, margin: '0 auto', position: 'relative' }}>
+    {/* Başlık ve Kullanıcı + Çıkış Butonu yatay hizalı */}
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+      <h2>📁 Kayıtlı Projeler</h2>
+
+      {/* Kullanıcı açılır menü kutusu */}
+      <div className="user-dropdown" style={{ position: 'relative' }}>
+  <div onClick={toggleDropdown} className="user-dropdown-toggle">
+
+    <span>Hoşgeldin, {username || 'Ziyaretçi'}</span>
+    <span style={{ fontSize: '1.2rem' }}>▼</span>
+  </div>
+
+
+      {showDropdown && (
+  <div className="user-dropdown-menu">
+
+    {[
+      { label: '🧾 Hesabım', action: 'profile' },
+      { label: '✏️ Kullanıcı Adı Değiştir', action: 'username' },
+      { label: '🔑 Şifre Değiştir', action: 'password' },
+    ].map((item, i) => (
+      <button
+  key={i}
+  onClick={() => handleAccountOption(item.action)}
+  className="user-dropdown-button"
 >
-Hoşgeldin, {username || 'Ziyaretçi'}
 
-</span>
+        {item.label}
+      </button>
+    ))}
 
-          <button
-            onClick={handleLogout}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: '#e53935',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 5,
-              cursor: 'pointer',
-              fontWeight: 'bold',
-            }}
-          >
-            Çıkış Yap
-          </button>
+    <button onClick={handleLogout} className="user-dropdown-button user-dropdown-logout">
+
+      🚪 Çıkış Yap
+    </button>
+  </div>
+)}
+
+
+          
         </div>
       </div>
 
