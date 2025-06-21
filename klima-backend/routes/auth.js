@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const verifyToken = require('../middleware/verifyToken');
 const User = require('../models/User');  // Modelin doğru yerde olduğundan emin ol
 
 // Kullanıcı kayıt endpoint'i
