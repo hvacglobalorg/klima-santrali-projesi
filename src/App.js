@@ -3,6 +3,7 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import citiesData from './data/CitiesData';
 import SantralForm from './SantralForm';
+import HeatRecoveryPage from './pages/HeatRecoveryPage';
 import AdminPanel from './pages/AdminPanel';
 import './App.css';
 
@@ -373,6 +374,7 @@ function App() {
           <Route path="/kayit" element={<RegisterPage />} />
           <Route path="/panel" element={<DashboardPage />} />
           <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/igk" element={<HeatRecoveryPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>

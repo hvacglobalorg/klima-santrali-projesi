@@ -59,6 +59,24 @@ const HomePage = () => {
             Klima Santrali Seçimi
           </button>
           <button
+  onClick={() => navigate('/igk')}
+  style={{
+    backgroundColor: '#10b981',
+    color: 'white',
+    border: 'none',
+    padding: '14px 28px',
+    borderRadius: 8,
+    cursor: 'pointer',
+    fontWeight: '600',
+    boxShadow: '0 4px 12px rgba(16, 185, 129, 0.6)',
+    transition: 'background-color 0.3s',
+  }}
+  onMouseEnter={e => e.currentTarget.style.backgroundColor = '#059669'}
+  onMouseLeave={e => e.currentTarget.style.backgroundColor = '#10b981'}
+>
+  ♻️ Isı Geri Kazanım Cihazı Seçimi
+</button>
+          <button
             onClick={() => navigate('/giris')}
             style={{
               border: '2px solid #2563eb',
